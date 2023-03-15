@@ -1,4 +1,6 @@
-abstract class ICreateUserService {
-  create: (data: any) => Promise<any>;
+import { User } from '@prisma/client';
+
+abstract class IGetUserService {
+  findById: (user_id: string) => Promise<User>;
 }
-export { ICreateUserService };
+export { IGetUserService };

@@ -1,15 +1,30 @@
-import { ICreateUserService } from '../../types/service/create-user-service.interface';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { IUserRepository } from '../../types/repository/create-user.interface';
 import { User } from '@prisma/client';
-import { UserDto } from '../../dto/user.dto';
+import { IGetUserService } from '../../types/service/get-user-service.interface';
+import { promisify } from 'util';
+import * as fs from 'fs';
+
+const readFileAsync = promisify(fs.readFile);
+
 @Injectable()
-class CreateUserService implements ICreateUserService {
+class GetUserService implements IGetUserService {
   constructor(private userRepository: IUserRepository) {}
-  create(data: UserDto): Promise<User> {
-    console.log(data);
-    return this.userRepository.create(data);
+
+  async findById(user_id: string): Promise<User> {
+    const user = await this.userRepository.findById(user_id).catch((err) => {
+      throw new BadRequestException({ message: err.message });
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }
 
-export { CreateUserService };
+export { GetUserService };

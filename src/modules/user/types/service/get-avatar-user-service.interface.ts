@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
 
-abstract class IGetUserService {
-  findById: (user_id: string) => Promise<User>;
+abstract class IGetAvatarUserService {
+  findByAvatar: (avatar: string) => Promise<User>;
 }
-export { IGetUserService };
+export { IGetAvatarUserService };

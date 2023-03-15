@@ -1,4 +1,3 @@
-import { ICreateUserService } from '../../types/service/create-user-service.interface';
 import {
   BadRequestException,
   Injectable,
@@ -6,22 +5,30 @@ import {
 } from '@nestjs/common';
 import { IUserRepository } from '../../types/repository/create-user.interface';
 import { User } from '@prisma/client';
-import { UserDto } from '../../dto/user.dto';
-import { IGetUserService } from '../../types/service/get-user-service.interface';
+import { IGetAvatarUserService } from '../../types/service/get-avatar-user-service.interface';
+import { promisify } from 'util';
+import * as fs from 'fs';
+
+const readFileAsync = promisify(fs.readFile);
+
 @Injectable()
-class GetUserService implements IGetUserService {
+class GetAvatarUserService implements IGetAvatarUserService {
   constructor(private userRepository: IUserRepository) {}
 
-  async findById(user_id: string): Promise<User> {
-    const user = await this.userRepository.findById(user_id).catch((err) => {
+  async findByAvatar(avatar: string): Promise<User> {
+    const user = await this.userRepository.findByAvatar(avatar).catch((err) => {
       throw new BadRequestException({ message: err.message });
     });
-
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Avatar not found');
     }
-    return user;
+    return { ...user, avatar: await this.readFileToBase64(user.avatar) };
+  }
+
+  private async readFileToBase64(filePath: string): Promise<string> {
+    const fileData = await readFileAsync(filePath);
+    return Buffer.from(fileData).toString('base64');
   }
 }
 
-export { GetUserService };
+export { GetAvatarUserService };
